@@ -3,38 +3,24 @@
     <div class="search_input">
       <div class="search_input_wrapper">
         <i class="iconfont icon-sousuo"></i>
-        <input type="text" />
+        <input v-model="message" type="text" />
       </div>
     </div>
     <div class="search_result">
       <h3>电影/电视剧/综艺</h3>
       <ul>
-        <li>
+        <li v-for="list in moviesList" :key="list.id">
           <div class="img">
-            <img src="/images/movie_1.jpg" />
+            <img :src="list.img | setWH('128.180')" />
           </div>
           <div class="info">
             <p>
-              <span>无名之辈</span>
-              <span>8.5</span>
+              <span v-text="list.nm"></span>
+              <span v-text="list.sc"></span>
             </p>
-            <p>A Cool Fish</p>
-            <p>剧情,喜剧,犯罪</p>
-            <p>2018-11-16</p>
-          </div>
-        </li>
-        <li>
-          <div class="img">
-            <img src="/images/movie_1.jpg" />
-          </div>
-          <div class="info">
-            <p>
-              <span>无名之辈</span>
-              <span>8.5</span>
-            </p>
-            <p>A Cool Fish</p>
-            <p>剧情,喜剧,犯罪</p>
-            <p>2018-11-16</p>
+            <p v-text="list.enm"></p>
+            <p v-text="list.cat"></p>
+            <p v-text="list.rt"></p>
           </div>
         </li>
       </ul>
@@ -44,7 +30,49 @@
 
 <script>
 export default {
-  name: "search"
+  name: "search",
+  data() {
+    return {
+      message: "",
+      moviesList: []
+    };
+  },
+  methods: {
+    cancelRequest() {
+      if (typeof this.source === "function") {
+        this.source("终止请求");
+      }
+    }
+  },
+  watch: {
+    message: function(val) {
+      var that = this;
+      this.cancelRequest();
+      this.axios
+        .get("/api/searchList", {
+          params: {
+            cityId: 10, // 后期绑定城市ID
+            kw: val
+          },
+          cancelToken: new this.axios.CancelToken(function(c) {
+            that.source = c;
+          })
+        })
+        .then(res => {
+          var status = res.data.status;
+          var movies = res.data.data.movies;
+          if (!status && movies) {
+            this.moviesList = movies.list;
+          }
+        })
+        .catch(err => {
+          if (this.axios.isCancel(err)) {
+          } else {
+            console.log(err);
+          }
+        });
+    }
+  }
 };
 </script>
 
@@ -104,10 +132,14 @@ export default {
   flex: 1;
 }
 .search_body .search_result .info p {
+  // flex: 1;
   height: 22px;
   display: flex;
   line-height: 22px;
   font-size: 12px;
+  // overflow: hidden;
+  // white-space: nowrap;
+  // text-overflow: ellipsis;
 }
 .search_body .search_result .info p:nth-of-type(1) span:nth-of-type(1) {
   font-size: 18px;
