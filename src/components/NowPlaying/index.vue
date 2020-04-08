@@ -1,123 +1,19 @@
 <template>
   <div class="movie_body">
     <ul>
-      <li>
+      <li v-for="list in movieList" :key="list.id">
         <div class="pic_show">
-          <img src="/images/movie_1.jpg" />
+          <img :src="list.img | setWH('128.180')" />
         </div>
         <div class="info_list">
-          <h2>无名之辈</h2>
+          <h2 v-text="list.nm"></h2>
+          <img v-if="list.version" src="@/assets/maxs.png" alt />
           <p>
             观众评
-            <span class="grade">9.2</span>
+            <span class="grade" v-text="list.sc"></span>
           </p>
-          <p>主演: 陈建斌,任素汐,潘斌龙</p>
-          <p>今天55家影院放映607场</p>
-        </div>
-        <div class="btn_mall">购票</div>
-      </li>
-      <li>
-        <div class="pic_show">
-          <img src="/images/movie_2.jpg" />
-        </div>
-        <div class="info_list">
-          <h2>毒液：致命守护者</h2>
-          <p>
-            观众评
-            <span class="grade">9.3</span>
-          </p>
-          <p>主演: 汤姆·哈迪,米歇尔·威廉姆斯,里兹·阿迈德</p>
-          <p>今天56家影院放映443场</p>
-        </div>
-        <div class="btn_mall">购票</div>
-      </li>
-      <li>
-        <div class="pic_show">
-          <img src="/images/movie_1.jpg" />
-        </div>
-        <div class="info_list">
-          <h2>无名之辈</h2>
-          <p>
-            观众评
-            <span class="grade">9.2</span>
-          </p>
-          <p>主演: 陈建斌,任素汐,潘斌龙</p>
-          <p>今天55家影院放映607场</p>
-        </div>
-        <div class="btn_mall">购票</div>
-      </li>
-      <li>
-        <div class="pic_show">
-          <img src="/images/movie_2.jpg" />
-        </div>
-        <div class="info_list">
-          <h2>毒液：致命守护者</h2>
-          <p>
-            观众评
-            <span class="grade">9.3</span>
-          </p>
-          <p>主演: 汤姆·哈迪,米歇尔·威廉姆斯,里兹·阿迈德</p>
-          <p>今天56家影院放映443场</p>
-        </div>
-        <div class="btn_mall">购票</div>
-      </li>
-      <li>
-        <div class="pic_show">
-          <img src="/images/movie_1.jpg" />
-        </div>
-        <div class="info_list">
-          <h2>无名之辈</h2>
-          <p>
-            观众评
-            <span class="grade">9.2</span>
-          </p>
-          <p>主演: 陈建斌,任素汐,潘斌龙</p>
-          <p>今天55家影院放映607场</p>
-        </div>
-        <div class="btn_mall">购票</div>
-      </li>
-      <li>
-        <div class="pic_show">
-          <img src="/images/movie_2.jpg" />
-        </div>
-        <div class="info_list">
-          <h2>毒液：致命守护者</h2>
-          <p>
-            观众评
-            <span class="grade">9.3</span>
-          </p>
-          <p>主演: 汤姆·哈迪,米歇尔·威廉姆斯,里兹·阿迈德</p>
-          <p>今天56家影院放映443场</p>
-        </div>
-        <div class="btn_mall">购票</div>
-      </li>
-      <li>
-        <div class="pic_show">
-          <img src="/images/movie_1.jpg" />
-        </div>
-        <div class="info_list">
-          <h2>无名之辈</h2>
-          <p>
-            观众评
-            <span class="grade">9.2</span>
-          </p>
-          <p>主演: 陈建斌,任素汐,潘斌龙</p>
-          <p>今天55家影院放映607场</p>
-        </div>
-        <div class="btn_mall">购票</div>
-      </li>
-      <li>
-        <div class="pic_show">
-          <img src="/images/movie_2.jpg" />
-        </div>
-        <div class="info_list">
-          <h2>毒液：致命守护者</h2>
-          <p>
-            观众评
-            <span class="grade">9.3</span>
-          </p>
-          <p>主演: 汤姆·哈迪,米歇尔·威廉姆斯,里兹·阿迈德</p>
-          <p>今天56家影院放映443场</p>
+          <p v-text="list.star"></p>
+          <p v-text="list.showInfo"></p>
         </div>
         <div class="btn_mall">购票</div>
       </li>
@@ -127,7 +23,28 @@
 
 <script>
 export default {
-  name: "nowPlaying"
+  name: "nowPlaying",
+  data() {
+    return {
+      movieList: []
+    };
+  },
+  mounted() {
+    this.axios
+      .get("/api/movieOnInfoList", {
+        params: {
+          cityId: 10
+        }
+      })
+      .then(res => {
+        const status = res.data.status;
+        if (!status) {
+          this.movieList = res.data.data.movieList;
+        } else {
+          console.log("服务器繁忙", res.data.msg);
+        }
+      });
+  }
 };
 </script>
 
