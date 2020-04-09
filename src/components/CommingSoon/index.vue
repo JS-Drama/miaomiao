@@ -5,10 +5,10 @@
       <ul>
         <li v-if="pullDownMsg != ''" v-text="pullDownMsg" class="pull_down"></li>
         <li v-for="list in comingList" :key="list.id">
-          <div class="pic_show">
+          <div class="pic_show" @tap="handleToDetail(list.id)">
             <img :src="list.img | setWH('128.180')" />
           </div>
-          <div class="info_list">
+          <div class="info_list" @tap="handleToDetail(list.id)">
             <h2 v-text="list.nm"></h2>
             <img v-if="list.version" src="@/assets/maxs.png" alt />
             <p>
@@ -60,6 +60,9 @@ export default {
       });
   },
   methods: {
+    handleToDetail(id) {
+      this.$router.push("/movie/detail/2/" + id);
+    },
     handleToScroll(pos) {
       if (pos.y > 30) {
         this.pullDownMsg = "正在更新中...";

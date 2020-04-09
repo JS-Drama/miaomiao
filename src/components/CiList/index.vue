@@ -52,7 +52,6 @@ export default {
         }
       })
       .then(res => {
-        console.log(res);
         var status = res.data.status;
         if (!status) {
           this.cinemasList = res.data.data.cinemas;
