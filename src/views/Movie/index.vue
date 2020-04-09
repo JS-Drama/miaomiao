@@ -4,7 +4,7 @@
     <div id="content">
       <div class="movie_menu">
         <router-link tag="div" to="/movie/city" class="city_name">
-          <span>大连</span>
+          <span v-text="$store.state.city.nm"></span>
           <i class="iconfont icon-lower-triangle"></i>
         </router-link>
         <div class="hot_swtich">
@@ -26,12 +26,49 @@
 <script>
 import Header from "@/components/Header";
 import TabBar from "@/components/TabBar";
+import { messageBox } from "@/components/JS";
 
 export default {
   name: "Movie",
   components: {
     Header,
     TabBar
+  },
+  mounted() {
+    this.axios.get("/api/getLocation").then(res => {
+      var status = res.data.status;
+      var data = res.data.data;
+      var currentCityName = this.$store.state.city.nm;
+      var currentCityId = this.$store.state.city.id;
+      console.log(currentCityName, data.nm, currentCityId, data.id);
+      if (!status && currentCityName != data.nm && currentCityId != data.id) {
+        setTimeout(() => {
+          messageBox({
+            title: "定位",
+            content: data.nm,
+            cancel: "取消",
+            ok: "切换定位",
+            handleOk() {
+              window.localStorage.setItem("nowNm", data.nm);
+              window.localStorage.setItem("nowId", data.id);
+              window.location.reload();
+            }
+          });
+        }, 2000);
+      }
+    });
+    // messageBox({
+    //   title: "定位",
+    //   content: "深圳",
+    //   cancel: "取消",
+    //   ok: "切换定位",
+    //   handleCancel(){
+    //     console.log(1)
+    //   },
+    //   handleOk(){
+    //     console.log(2)
+    //   }
+    // });
   }
 };
 </script>
@@ -92,7 +129,7 @@ export default {
   line-height: 45px;
 }
 .movie_menu .search_entry.router-link-active {
-  i{
+  i {
     color: #ef4238;
   }
   border-bottom: 2px #ef4238 solid;

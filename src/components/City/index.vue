@@ -1,20 +1,35 @@
 <template>
   <div class="city_body">
     <div class="city_list">
-      <div class="city_hot">
-        <h2>热门城市</h2>
-        <ul class="clearfix">
-          <li v-for="hot in hotList" :key="hot.id" v-text="hot.nm"></li>
-        </ul>
-      </div>
-      <div class="city_sort" ref="city_sort">
-        <div v-for="city in cityList" :key="city.index">
-          <h2 v-text="city.index"></h2>
-          <ul>
-            <li v-for="list in city.list" v-text="list.nm" :key="list.id"></li>
-          </ul>
+      <Loading v-if="isLoading" />
+      <Scroller v-else ref="city_list">
+        <div>
+          <div class="city_hot">
+            <h2>热门城市</h2>
+            <ul class="clearfix">
+              <li
+                v-for="hot in hotList"
+                @tap="handleToCity(hot.nm, hot.id)"
+                :key="hot.id"
+                v-text="hot.nm"
+              ></li>
+            </ul>
+          </div>
+          <div class="city_sort" ref="city_sort">
+            <div v-for="city in cityList" :key="city.index">
+              <h2 v-text="city.index"></h2>
+              <ul>
+                <li
+                  v-for="list in city.list"
+                  @tap="handleToCity(list.nm, list.id)"
+                  v-text="list.nm"
+                  :key="list.id"
+                ></li>
+              </ul>
+            </div>
+          </div>
         </div>
-      </div>
+      </Scroller>
     </div>
     <div class="city_index">
       <ul v-for="(city,index) in cityList" :key="city.index">
@@ -30,21 +45,35 @@ export default {
   data() {
     return {
       cityList: [], // 城市列表
-      hotList: [] // 热门城市
+      hotList: [], // 热门城市
+      isLoading: true
     };
   },
   mounted() {
-    this.axios.get("/api/cityList").then(res => {
-      const status = res.data.status; //返回状态
-      if (!status) {
-        // 获取返回城市数据
-        const cities = res.data.data.cities;
+    var cityList = window.localStorage.getItem("cityList");
+    var hotList = window.localStorage.getItem("hotList");
 
-        var { cityList, hotList } = this.fromatCityList(cities);
-        this.cityList = cityList;
-        this.hotList = hotList;
-      }
-    });
+    if (cityList && hotList) {
+      this.cityList = JSON.parse(cityList);
+      this.hotList = JSON.parse(hotList);
+      this.isLoading = false;
+    } else {
+      this.axios.get("/api/cityList").then(res => {
+        const status = res.data.status; //返回状态
+        if (!status) {
+          // 获取返回城市数据
+          const cities = res.data.data.cities;
+
+          var { cityList, hotList } = this.fromatCityList(cities);
+          this.cityList = cityList;
+          this.hotList = hotList;
+          this.isLoading = false;
+          // 本地存储
+          window.localStorage.setItem("cityList", JSON.stringify(cityList));
+          window.localStorage.setItem("hotList", JSON.stringify(hotList));
+        }
+      });
+    }
   },
   methods: {
     fromatCityList(cities) {
@@ -107,7 +136,13 @@ export default {
     // 跳转
     handleToIndex(index) {
       var h2 = this.$refs.city_sort.getElementsByTagName("h2");
-      this.$refs.city_sort.parentNode.scrollTop = h2[index].offsetTop;
+      this.$refs.city_list.toScrollTop(-h2[index].offsetTop);
+    },
+    handleToCity(nm, id) {
+      this.$store.commit("city/CITY_INFO", { nm, id });
+      window.localStorage.setItem("nowNm", nm);
+      window.localStorage.setItem("nowId", id);
+      this.$router.push("/movie/nowPlaying");
     }
   }
 };

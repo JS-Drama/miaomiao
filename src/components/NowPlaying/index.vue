@@ -1,23 +1,27 @@
 <template>
   <div class="movie_body">
-    <ul>
-      <li v-for="list in movieList" :key="list.id">
-        <div class="pic_show">
-          <img :src="list.img | setWH('128.180')" />
-        </div>
-        <div class="info_list">
-          <h2 v-text="list.nm"></h2>
-          <img v-if="list.version" src="@/assets/maxs.png" alt />
-          <p>
-            观众评
-            <span class="grade" v-text="list.sc"></span>
-          </p>
-          <p v-text="list.star"></p>
-          <p v-text="list.showInfo"></p>
-        </div>
-        <div class="btn_mall">购票</div>
-      </li>
-    </ul>
+    <Loading v-if="isLoading" />
+    <Scroller v-else :handleToScroll="handleToScroll" :handleToTouchEnd="handleToTouchEnd">
+      <ul>
+        <li v-if="pullDownMsg != ''" v-text="pullDownMsg" class="pull_down"></li>
+        <li v-for="list in movieList" :key="list.id">
+          <div class="pic_show">
+            <img :src="list.img | setWH('128.180')" />
+          </div>
+          <div class="info_list">
+            <h2 v-text="list.nm"></h2>
+            <img v-if="list.version" src="@/assets/maxs.png" alt />
+            <p>
+              观众评
+              <span class="grade" v-text="list.sc"></span>
+            </p>
+            <p v-text="list.star"></p>
+            <p v-text="list.showInfo"></p>
+          </div>
+          <div class="btn_mall">购票</div>
+        </li>
+      </ul>
+    </Scroller>
   </div>
 </template>
 
@@ -26,24 +30,52 @@ export default {
   name: "nowPlaying",
   data() {
     return {
-      movieList: []
+      movieList: [],
+      pullDownMsg: "",
+      isLoading: true,
+      prevCityId: -1
     };
   },
-  mounted() {
+  activated() {
+    this.isLoading = true;
+    var cityId = this.$store.state.city.id;
+    if (this.prevCityId === cityId) {
+      this.isLoading = false;
+      return;
+    }
     this.axios
       .get("/api/movieOnInfoList", {
         params: {
-          cityId: 10
+          cityId
         }
       })
       .then(res => {
         const status = res.data.status;
         if (!status) {
           this.movieList = res.data.data.movieList;
+          this.prevCityId = cityId;
+          this.isLoading = false;
         } else {
           console.log("服务器繁忙", res.data.msg);
         }
       });
+  },
+  methods: {
+    handleToScroll(pos) {
+      if (pos.y > 30) {
+        this.pullDownMsg = "正在更新中...";
+      }
+    },
+    handleToTouchEnd(pos) {
+      setTimeout(() => {
+        if (pos.y > 30) {
+          this.pullDownMsg = "更新成功√";
+          setTimeout(() => {
+            this.pullDownMsg = "";
+          }, 2000);
+        }
+      }, 2000);
+    }
   }
 };
 </script>
@@ -52,6 +84,13 @@ export default {
 .movie_body {
   flex: 1;
   overflow: auto;
+  .pull_down {
+    margin-top: 12px;
+    display: block;
+    text-align: center;
+    border-bottom: 0;
+    padding-bottom: 10px;
+  }
 }
 .movie_body ul {
   margin: 0 12px;
