@@ -19,7 +19,8 @@
         <router-view></router-view>
       </keep-alive>
     </div>
-    <TabBar></TabBar>
+    <TabBar />
+    <router-view name="detail"></router-view>
   </div>
 </template>
 
@@ -40,7 +41,6 @@ export default {
       var data = res.data.data;
       var currentCityName = this.$store.state.city.nm;
       var currentCityId = this.$store.state.city.id;
-      console.log(currentCityName, data.nm, currentCityId, data.id);
       if (!status && currentCityName != data.nm && currentCityId != data.id) {
         setTimeout(() => {
           messageBox({
@@ -57,18 +57,6 @@ export default {
         }, 2000);
       }
     });
-    // messageBox({
-    //   title: "定位",
-    //   content: "深圳",
-    //   cancel: "取消",
-    //   ok: "切换定位",
-    //   handleCancel(){
-    //     console.log(1)
-    //   },
-    //   handleOk(){
-    //     console.log(2)
-    //   }
-    // });
   }
 };
 </script>
