@@ -1,27 +1,30 @@
 <template>
   <div class="cinema_body">
-    <ul>
-      <li v-for="list in cinemasList" :key="list.id">
-        <div class="cinema_name">
-          <span v-text="list.nm"></span>
-          <span class="q">
-            <span class="price" v-text="list.sellPrice"></span> 元起
-          </span>
-        </div>
-        <div class="address">
-          <span v-text="list.addr"></span>
-          <span v-text="list.distance"></span>
-        </div>
-        <div class="card">
-          <div
-            v-for="(num,key) in list.tag"
-            v-if="num === 1"
-            :key="key"
-            :class="key | calssCard"
-          >{{ key | formatCard }}</div>
-        </div>
-      </li>
-    </ul>
+    <Loading v-if="isLoading" />
+    <Scroller v-else>
+      <ul>
+        <li v-for="list in cinemasList" :key="list.id">
+          <div class="cinema_name">
+            <span v-text="list.nm"></span>
+            <span class="q">
+              <span class="price" v-text="list.sellPrice"></span> 元起
+            </span>
+          </div>
+          <div class="address">
+            <span v-text="list.addr"></span>
+            <span v-text="list.distance"></span>
+          </div>
+          <div class="card">
+            <div
+              v-for="(num,key) in list.tag"
+              v-if="num === 1"
+              :key="key"
+              :class="key | calssCard"
+            >{{ key | formatCard }}</div>
+          </div>
+        </li>
+      </ul>
+    </Scroller>
   </div>
 </template>
 
@@ -30,14 +33,22 @@ export default {
   name: "ciList",
   data() {
     return {
-      cinemasList: [] // 影院列表
+      cinemasList: [], // 影院列表
+      isLoading: true,
+      prevCityId: -1
     };
   },
-  mounted() {
+  activated() {
+    this.isLoading = true;
+    var cityId = this.$store.state.city.id;
+    if (this.prevCityId === cityId) {
+      this.isLoading = false;
+      return;
+    }
     this.axios
       .get("/api/cinemaList", {
         params: {
-          cityId: 10
+          cityId
         }
       })
       .then(res => {
@@ -45,7 +56,9 @@ export default {
         var status = res.data.status;
         if (!status) {
           this.cinemasList = res.data.data.cinemas;
+          this.prevCityId = cityId;
         }
+        this.isLoading = false;
       });
   },
   filters: {

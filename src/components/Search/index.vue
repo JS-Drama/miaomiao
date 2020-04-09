@@ -47,11 +47,12 @@ export default {
   watch: {
     message: function(val) {
       var that = this;
+      var cityId = this.$store.state.city.id;
       this.cancelRequest();
       this.axios
         .get("/api/searchList", {
           params: {
-            cityId: 10, // 后期绑定城市ID
+            cityId, // 后期绑定城市ID
             kw: val
           },
           cancelToken: new this.axios.CancelToken(function(c) {
